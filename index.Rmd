@@ -1,0 +1,86 @@
+---
+title       : Shiny Project Example
+subtitle    : Prediction Algorithm
+author      : George Lwevoola
+job         : 
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+## 1. Introduction
+
+This Shiny application demonstrates the use of a web-based Client-Server
+Model to create reproducible prediction models. 
+
+The goal of this project is to predict the manner in which 20 subjects performed exercise (how well). 
+
+This is represented by the "classe" variable in the training data set.
+
+The data used for this sample application is derived from the Practical Machine Learning module.
+
+--- .class #id 
+
+## 2. Dataset selection
+The training dataset is located at https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv 
+
+while the test data set on which the prediction model will be used is at
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+This data has been cleaned up and for this sample application is represented as
+
+1. Training data set - mytrainfile.csv
+2. Test data set - my testfile.csv
+```{r,echo=FALSE}
+library(caret)
+library(MASS)
+training<-read.csv("mytrainfile.csv")
+testing<-read.csv("mytestfile.csv")
+set.seed(3323)
+inTrain = createDataPartition(training$classe, p = 0.6)[[1]]
+train =training[ inTrain,]
+test  =training[-inTrain,]
+control <- trainControl(method="repeatedcv", number=10, repeats=3)
+metric<-"Accuracy"
+```
+
+---
+## 3. Machine Learning Algorithms
+Three machine learning algorithms have been selected for the sample application
+
+1. Linear Discriminant Analysis (LDA)
+
+2. Random Forest (rf)
+
+3. Recursive Partitioning and Regression Trees (rpart)
+
+Random Forest yields the most accurate prediction and used as an example
+
+---
+## 4. Displaying Results
+Using the application involves selecting from a drop down list.
+
+Below we use the Random Forest algorithm as an example
+```{r,echo=FALSE}
+# Random Forest
+set.seed(3344)
+fit.rf <- train(classe~., data=train, method="rf", metric=metric, trControl=control)
+pred.rf <-predict(fit.rf ,test)
+rf.accuracy<-confusionMatrix(pred.rf,test$classe)
+testing[,"classe"]<-predict(fit.rf,testing)
+```
+
+The Prediction for the selected algorithm is calculated and displayed
+```{r}
+predict(fit.rf,testing)
+```
+
+The display also includes the accuracy of algorithm selected
+
+```{r}
+round(rf.accuracy$overall,3)
+```
+
